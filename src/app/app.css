@@ -1,0 +1,28 @@
+#app {
+  --board: min(95vw, 95vh);
+  width: 100%;
+  height: 100%;
+  background-color: #612502;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#board {
+  width: var(--board);
+  height: var(--board);
+  background-color: #e3cfaa;
+  display: flex;
+  flex-direction: column;
+}
+
+.board-row {
+  display: flex;
+  height: 100%;
+}
+
+.cell {
+  width: 100%;
+  outline: solid calc(var(--board) * 0.004) #e2e1da;
+  border: solid calc(var(--board) * 0.004) #e2e1da;
+}
