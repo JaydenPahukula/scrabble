@@ -1,7 +1,8 @@
 // letter point values
 
-export default function points(l: string) {
-  if (l.length !== 1) return 0;
+import Letter from 'src/types/letter';
+
+export default function points(l: Letter) {
   if ('AEIOULNSTR'.includes(l)) return 1;
   if (l === 'D' || l === 'G') return 2;
   if (l === 'B' || l === 'C' || l === 'M' || l === 'P') return 3;
