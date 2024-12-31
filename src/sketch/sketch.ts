@@ -1,4 +1,4 @@
-import { Sketch } from '@p5-wrapper/react';
+import { P5CanvasInstance, Sketch } from '@p5-wrapper/react';
 import boardPattern from 'src/data/boardpattern';
 
 // constants
@@ -7,42 +7,51 @@ const CELL_RATIO = 1.05;
 const BORDER_SIZE = 0.1; // vs cell width
 const TRIANGLE_RATIO = 1.2;
 const SHADOW_SIZE = 0.6;
-const SHADOW_OPACITY = 0.1;
+const SHADOW_OPACITY = 0.14;
+const STAR_RADIUS = 0.2;
+const STAR_POINTINESS = 0.5;
+const FONT_SIZE = 0.14;
+const FONT_SPACING = 0.18;
 
 // colors
-const BORDER_COLOR = '#FFFFFF';
+const BORDER_COLOR = '#f2f1eb';
 const CELL_COLORS = ['#decea9', '#acdffa', '#3397cc', '#f5c0a9', '#f58453', '#f5c0a9'];
+const TEXT_COLOR = '#242322';
 
 function reflect(i: number, n: number): number {
   n -= 1;
   return Math.floor(i / n) % 2 == 0 ? i % n : n - (i % n);
 }
 
-const sketch: Sketch = (p5) => {
+const sketch: Sketch = (p5: P5CanvasInstance) => {
   let H = 0;
   let cW = 0; // cell width
   let cH = 0; // cell height
   let grid: string[][] = [];
 
-  function reset() {
+  function reset(p5: P5CanvasInstance) {
     // recalculate size
     cW = document.body.clientWidth / W;
     cH = cW * CELL_RATIO;
     H = Math.floor(document.body.clientHeight / cH) + 1;
+    p5.textSize(cH * FONT_SIZE);
     // reset arrays
     grid = Array(H).fill(Array(W).fill(''));
   }
 
   p5.setup = () => {
     p5.createCanvas(document.body.clientWidth, document.body.clientHeight);
+    reset(p5);
     p5.frameRate(30);
     p5.noStroke();
-    reset();
+    p5.textAlign(p5.CENTER, p5.CENTER);
+    p5.textStyle(p5.BOLD);
+    p5.textFont(p5.loadFont('/assets/InterstateBlack.otf'));
   };
 
   p5.windowResized = () => {
     p5.resizeCanvas(document.body.clientWidth, document.body.clientHeight);
-    reset();
+    reset(p5);
   };
 
   p5.draw = () => {
@@ -100,6 +109,30 @@ const sketch: Sketch = (p5) => {
         p5.vertex(x + b, y + b);
         p5.vertex(x + b, y + cH - b);
         p5.endShape();
+
+        // text/designs
+        p5.fill(TEXT_COLOR);
+        const R = STAR_RADIUS * cW;
+        const P = R * (1 - STAR_POINTINESS);
+        if (type === 5) {
+          // star
+          p5.beginShape();
+          p5.vertex(xC, yC - R);
+          p5.vertex(xC + 0.5877 * P, yC - 0.809 * P);
+          p5.vertex(xC + 0.9511 * R, yC - 0.309 * R);
+          p5.vertex(xC + 0.9511 * P, yC + 0.309 * P);
+          p5.vertex(xC + 0.5877 * R, yC + 0.809 * R);
+          p5.vertex(xC, yC + P);
+          p5.vertex(xC - 0.5877 * R, yC + 0.809 * R);
+          p5.vertex(xC - 0.9511 * P, yC + 0.309 * P);
+          p5.vertex(xC - 0.9511 * R, yC - 0.309 * R);
+          p5.vertex(xC - 0.5877 * P, yC - 0.809 * P);
+          p5.endShape(p5.CLOSE);
+        } else if (type !== 0) {
+          p5.text(type === 1 || type == 3 ? 'DOUBLE' : 'TRIPLE', xC, yC - cH * FONT_SPACING);
+          p5.text(type === 1 || type == 2 ? 'LETTER' : 'WORD', xC, yC);
+          p5.text('SCORE', xC, yC + cH * FONT_SPACING);
+        }
       }
     }
   };
