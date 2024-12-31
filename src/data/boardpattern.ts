@@ -8,7 +8,7 @@
 // 4 - triple word
 // 5 - start
 
-const boardPattern: number[][] = [
+const BOARD_PATTERN: number[][] = [
   [4, 0, 0, 1, 0, 0, 0, 5],
   [0, 0, 1, 0, 0, 0, 1, 0],
   [0, 2, 0, 0, 0, 2, 0, 0],
@@ -19,4 +19,4 @@ const boardPattern: number[][] = [
   [4, 0, 0, 1, 0, 0, 0, 4],
 ];
 
-export default boardPattern;
+export default BOARD_PATTERN;
