@@ -1,26 +1,6 @@
-import { useEffect, useState } from 'react';
-import './app.css';
-
-const N = 15;
+import { ReactP5Wrapper } from '@p5-wrapper/react';
+import sketch from 'src/sketch/sketch';
 
 export default function App() {
-  const [grid, setGrid] = useState<string[][]>(Array(N).fill(Array(N).fill('')));
-
-  useEffect(() => {
-    console.log('grid', grid);
-  }, [grid]);
-
-  return (
-    <div id="app">
-      <div id="board">
-        {grid.map((row, y) => (
-          <div className="board-row">
-            {row.map((cell, x) => (
-              <div className="cell"></div>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  return <ReactP5Wrapper sketch={sketch} />;
 }
