@@ -1,5 +1,5 @@
 import { shuffle } from 'src/sketch/shuffle';
-import { getWord, isWord } from 'src/sketch/words';
+import { getRandomWord, isWord } from 'src/sketch/words';
 import Letter, { isLetter } from 'src/types/letter';
 
 let tileCoords: [number, number][] = [];
@@ -10,7 +10,7 @@ export function resetAlgorithm() {
 
 export function placeFirstWord(grid: Letter[][]): Letter[][] {
   const centerX = Math.floor(grid[0].length / 2);
-  const word = getWord();
+  const word = getRandomWord();
   for (let y = 0; y < word.length; y++) {
     //@ts-expect-error
     grid[y][centerX] = word[y];
@@ -23,7 +23,7 @@ export function placeWord(grid: Letter[][]): Letter[][] {
   const W = grid[0].length;
   const H = grid.length;
   for (let _ = 0; _ < 100; _++) {
-    const word = getWord();
+    const word = getRandomWord();
     // console.log(word, _, '=================');
     // try all available tiles
     for (const [x, y] of shuffle(tileCoords)) {
@@ -52,7 +52,7 @@ export function placeWord(grid: Letter[][]): Letter[][] {
             if (!isLetter(c)) break;
             newGrid[y][x1] = c;
           }
-          if (newTiles.length > 0 && checkGrid(newGrid)) {
+          if (newTiles.length > 0 && checkGrid(newGrid, x - i, y, false)) {
             tileCoords = tileCoords.concat(newTiles);
             return newGrid;
           }
@@ -81,7 +81,7 @@ export function placeWord(grid: Letter[][]): Letter[][] {
             if (!isLetter(c)) break;
             newGrid[y1][x] = c;
           }
-          if (newTiles.length > 0 && checkGrid(newGrid)) {
+          if (newTiles.length > 0 && checkGrid(newGrid, x, y - i, true)) {
             tileCoords = tileCoords.concat(newTiles);
             return newGrid;
           }
@@ -94,39 +94,35 @@ export function placeWord(grid: Letter[][]): Letter[][] {
   return grid;
 }
 
-function checkGrid(grid: Letter[][]): boolean {
-  // console.log('      checking', grid);
-  const W = grid[0].length;
-  const H = grid.length;
-  // check horizontally
-  for (let y = 0; y < H; y++) {
-    let word = '';
-    for (let x = 0; x < W; x++) {
-      if (grid[y][x] === '') {
-        if (word !== '') {
-          if (word.length > 1 && !isWord(word)) return false;
-          word = '';
-        }
-      } else {
-        word += grid[y][x];
-      }
-    }
-    if (word.length > 1 && !isWord(word)) return false;
+// find the word at the given tile
+function findWord(grid: Letter[][], x: number, y: number, vertical: boolean): string {
+  if (grid[y][x] === '') return '';
+  let out = grid[y][x];
+  if (vertical) {
+    for (let y1 = y - 1; y1 >= 0 && grid[y1][x] !== ''; y1--) out = grid[y1][x] + out;
+    for (let y1 = y + 1; y1 < grid.length && grid[y1][x] !== ''; y1++) out = out + grid[y1][x];
+  } else {
+    for (let x1 = x - 1; x1 >= 0 && grid[y][x1] !== ''; x1--) out = grid[y][x1] + out;
+    for (let x1 = x + 1; x1 < grid[y].length && grid[y][x1] !== ''; x1++) out = out + grid[y][x1];
   }
-  // check vertically
-  for (let x = 0; x < W; x++) {
-    let word = '';
-    for (let y = 0; y < H; y++) {
-      if (grid[y][x] === '') {
-        if (word !== '') {
-          if (word.length > 1 && !isWord(word)) return false;
-          word = '';
-        }
-      } else {
-        word += grid[y][x];
-      }
+  return out;
+}
+
+function checkGrid(grid: Letter[][], x: number, y: number, vertical: boolean): boolean {
+  const word = findWord(grid, x, y, vertical);
+  // check parallel word
+  if (!isWord(word)) return false;
+  // check perpendicular words
+  if (vertical) {
+    for (let i = 0; i < word.length; i++) {
+      const perpWord = findWord(grid, x, y + i, false);
+      if (perpWord.length > 1 && !isWord(perpWord)) return false;
     }
-    if (word.length > 1 && !isWord(word)) return false;
+  } else {
+    for (let i = 0; i < word.length; i++) {
+      const perpWord = findWord(grid, x + i, y, true);
+      if (perpWord.length > 1 && !isWord(perpWord)) return false;
+    }
   }
   return true;
 }

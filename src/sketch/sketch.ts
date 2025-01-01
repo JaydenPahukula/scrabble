@@ -59,7 +59,7 @@ const sketch: Sketch = (p5: P5CanvasInstance) => {
     }
     cW = document.body.clientWidth / W;
     cH = cW * CELL_RATIO;
-    H = Math.floor(document.body.clientHeight / cH) + 1;
+    H = Math.ceil(document.body.clientHeight / cH);
     // reset if switching to/from mobile
     if (small !== wasSmall) reset();
     wasSmall = small;
@@ -93,6 +93,7 @@ const sketch: Sketch = (p5: P5CanvasInstance) => {
   };
 
   p5.draw = () => {
+    // console.log('draw');
     p5.background(BORDER_COLOR);
 
     // add more rows to the grid if needed
