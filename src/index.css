@@ -2,7 +2,6 @@ html,
 body,
 #root {
   width: 100%;
-  min-width: 420px;
   height: 100%;
   margin: 0;
   overflow: hidden;

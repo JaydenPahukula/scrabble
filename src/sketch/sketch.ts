@@ -1,14 +1,14 @@
 import { P5CanvasInstance, Sketch } from '@p5-wrapper/react';
 import { Font } from 'p5';
-import BOARD_PATTERN from 'src/data/boardpattern';
+import { BOARD_PATTERN, BOARD_PATTERN_SMALL } from 'src/data/boardpattern';
 import points from 'src/data/letterpoints';
 import { placeFirstWord, placeWord, resetAlgorithm } from 'src/sketch/algorithm';
 import Letter from 'src/types/letter';
 
 // constants
 const FPS = 30;
-const SECONDS_PER_WORD = 3;
-const W = 15;
+const SECONDS_PER_WORD = 2;
+const SIZE_THRESHOLD = 600; // px
 const CELL_RATIO = 1.05;
 const BORDER_SIZE = 0.1; // vs cell width
 const BORDER_SHADOW_SIZE = 0.6;
@@ -33,53 +33,71 @@ const TILE_TEXT_COLOR = '#f0d59e';
 const reflect = (i: number, n: number): number =>
   Math.floor(i / (n - 1)) % 2 == 0 ? i % (n - 1) : n - 1 - (i % (n - 1));
 
+const isSmall = () => document.body.clientWidth > SIZE_THRESHOLD;
+
 const sketch: Sketch = (p5: P5CanvasInstance) => {
   let frameCount = 1;
+  let W = 0;
   let H = 0;
   let cW = 0; // cell width
   let cH = 0; // cell height
+  let wasSmall = isSmall();
   let grid: (Letter | '')[][] = [];
+  let boardPattern: number[][];
   let fontRegular: Font | undefined;
   let fontBold: Font | undefined;
   let fontBlack: Font | undefined;
 
-  function reset() {
-    // recalculate size
+  function resize() {
+    const small = isSmall();
+    if (small) {
+      W = 15;
+      boardPattern = BOARD_PATTERN;
+    } else {
+      W = 11;
+      boardPattern = BOARD_PATTERN_SMALL;
+    }
     cW = document.body.clientWidth / W;
     cH = cW * CELL_RATIO;
-    H = Math.floor(Math.min(document.body.clientHeight, document.body.clientWidth) / cH) + 1;
-    // reset arrays
+    H = Math.floor(document.body.clientHeight / cH) + 1;
+    // reset if switching to/from mobile
+    if (small !== wasSmall) reset();
+    wasSmall = small;
+  }
+
+  function reset() {
     grid = Array(H + 1)
       .fill(undefined)
       .map((_) => Array(W).fill(''));
     resetAlgorithm();
     grid = placeFirstWord(grid);
+    frameCount = 1;
   }
 
   p5.setup = () => {
-    p5.createCanvas(
-      document.body.clientWidth,
-      Math.min(document.body.clientHeight, document.body.clientWidth),
-    );
+    p5.createCanvas(document.body.clientWidth, document.body.clientHeight);
     p5.frameRate(FPS);
     p5.noStroke();
     p5.textAlign(p5.CENTER, p5.CENTER);
     fontRegular = p5.loadFont('/assets/InterstateRegular.otf');
     fontBold = p5.loadFont('/assets/InterstateBold.otf');
     fontBlack = p5.loadFont('/assets/InterstateBlack.otf');
+    resize();
     reset();
   };
 
   p5.windowResized = () => {
-    p5.resizeCanvas(
-      document.body.clientWidth,
-      Math.min(document.body.clientHeight, document.body.clientWidth),
-    );
-    reset();
+    p5.resizeCanvas(document.body.clientWidth, document.body.clientHeight);
+    frameCount = 1;
+    resize();
   };
 
   p5.draw = () => {
     p5.background(BORDER_COLOR);
+
+    // add more rows to the grid if needed
+    while (grid.length < H) grid.push(Array(W).fill(''));
+
     // draw cells
     for (let i = 0; i < H; i++) {
       for (let j = 0; j < W; j++) {
@@ -87,7 +105,7 @@ const sketch: Sketch = (p5: P5CanvasInstance) => {
         const y = i * cH;
         const b = (cW * BORDER_SIZE) / 2;
         const type =
-          BOARD_PATTERN[reflect(i, BOARD_PATTERN.length)][reflect(j, BOARD_PATTERN[0].length)];
+          boardPattern[reflect(i, boardPattern.length)][reflect(j, boardPattern[0].length)];
 
         p5.fill(CELL_COLORS[type]);
         p5.rect(x + b, y + b, cW - 2 * b, cH - 2 * b);
