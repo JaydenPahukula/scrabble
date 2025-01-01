@@ -2,12 +2,20 @@ import { shuffle } from 'src/sketch/shuffle';
 import { getRandomWord, isWord } from 'src/sketch/words';
 import Letter, { isLetter } from 'src/types/letter';
 
-const NUM_TRIES = 100;
+const NUM_TRIES = 200;
 
 let tileCoords: [number, number][] = [];
 
 export function resetAlgorithm() {
   tileCoords = [];
+}
+
+export function shiftAlgorithmUp() {
+  tileCoords = tileCoords.map<[number, number]>(([x, y]) => [x, y - 1]).filter(([_, y]) => y > 0);
+}
+
+export function getNumTilesPlaced() {
+  return tileCoords.length;
 }
 
 export function placeFirstWord(grid: Letter[][]): Letter[][] {
@@ -89,6 +97,8 @@ export function placeWord(grid: Letter[][]): Letter[][] {
     }
   }
   console.error('STUCK');
+  // if failed because grid is empty
+  if (!grid.map((row) => row.every((x) => x === '')).includes(false)) grid = placeFirstWord(grid);
   return grid;
 }
 

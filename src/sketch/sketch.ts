@@ -2,12 +2,19 @@ import { P5CanvasInstance, Sketch } from '@p5-wrapper/react';
 import { Font } from 'p5';
 import { BOARD_PATTERN, BOARD_PATTERN_SMALL } from 'src/data/boardpattern';
 import points from 'src/data/letterpoints';
-import { placeFirstWord, placeWord, resetAlgorithm } from 'src/sketch/algorithm';
+import {
+  getNumTilesPlaced,
+  placeFirstWord,
+  placeWord,
+  resetAlgorithm,
+  shiftAlgorithmUp,
+} from 'src/sketch/algorithm';
 import Letter from 'src/types/letter';
 
 // constants
 const FPS = 30;
-const SECONDS_PER_WORD = 2;
+const SCROLL_SPEED = 0.7;
+const PLACE_WORD_SPEED = 4.5;
 const SIZE_THRESHOLD = 600; // px
 const CELL_RATIO = 1.05;
 const BORDER_SIZE = 0.1; // vs cell width
@@ -36,7 +43,9 @@ const reflect = (i: number, n: number): number =>
 const isSmall = () => document.body.clientWidth > SIZE_THRESHOLD;
 
 const sketch: Sketch = (p5: P5CanvasInstance) => {
-  let frameCount = 1;
+  let updateTimer = 0;
+  let scrollOffset = 0;
+  let cellOffset = 0;
   let W = 0;
   let H = 0;
   let cW = 0; // cell width
@@ -54,12 +63,14 @@ const sketch: Sketch = (p5: P5CanvasInstance) => {
       W = 15;
       boardPattern = BOARD_PATTERN;
     } else {
-      W = 11;
+      W = 9;
       boardPattern = BOARD_PATTERN_SMALL;
     }
     cW = document.body.clientWidth / W;
     cH = cW * CELL_RATIO;
-    H = Math.ceil(document.body.clientHeight / cH);
+    H = Math.ceil(document.body.clientHeight / cH) + 1;
+    // add more rows to the grid if needed
+    while (grid.length < H) grid.push(Array(W).fill(''));
     // reset if switching to/from mobile
     if (small !== wasSmall) reset();
     wasSmall = small;
@@ -70,8 +81,13 @@ const sketch: Sketch = (p5: P5CanvasInstance) => {
       .fill(undefined)
       .map((_) => Array(W).fill(''));
     resetAlgorithm();
+    resetUpdateTimer();
     grid = placeFirstWord(grid);
-    frameCount = 1;
+  }
+
+  function resetUpdateTimer() {
+    updateTimer = Math.floor(FPS * (1 + PLACE_WORD_SPEED * (getNumTilesPlaced() / (W * H))));
+    // console.log(getNumTilesPlaced() / (W * H), updateTimer);
   }
 
   p5.setup = () => {
@@ -88,16 +104,14 @@ const sketch: Sketch = (p5: P5CanvasInstance) => {
 
   p5.windowResized = () => {
     p5.resizeCanvas(document.body.clientWidth, document.body.clientHeight);
-    frameCount = 1;
     resize();
   };
 
   p5.draw = () => {
-    // console.log('draw');
-    p5.background(BORDER_COLOR);
+    // scroll
+    p5.translate(0, -scrollOffset);
 
-    // add more rows to the grid if needed
-    while (grid.length < H) grid.push(Array(W).fill(''));
+    p5.background(BORDER_COLOR);
 
     // draw cells
     for (let i = 0; i < H; i++) {
@@ -106,7 +120,9 @@ const sketch: Sketch = (p5: P5CanvasInstance) => {
         const y = i * cH;
         const b = (cW * BORDER_SIZE) / 2;
         const type =
-          boardPattern[reflect(i, boardPattern.length)][reflect(j, boardPattern[0].length)];
+          boardPattern[reflect(i + cellOffset, boardPattern.length)][
+            reflect(j, boardPattern[0].length)
+          ];
 
         p5.fill(CELL_COLORS[type]);
         p5.rect(x + b, y + b, cW - 2 * b, cH - 2 * b);
@@ -208,8 +224,20 @@ const sketch: Sketch = (p5: P5CanvasInstance) => {
         }
       }
     }
-    if (frameCount % (SECONDS_PER_WORD * FPS) === 0) grid = placeWord(grid);
-    frameCount++;
+    updateTimer--;
+    if (updateTimer <= 0) {
+      grid = placeWord(grid);
+      resetUpdateTimer();
+    }
+    scrollOffset += SCROLL_SPEED;
+    while (scrollOffset > cH) {
+      scrollOffset -= cH;
+      cellOffset++;
+      grid = grid.slice(1);
+      // add more rows to the grid if needed
+      while (grid.length < H) grid.push(Array(W).fill(''));
+      shiftAlgorithmUp();
+    }
   };
 };
 
