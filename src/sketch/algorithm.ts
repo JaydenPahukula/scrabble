@@ -1,10 +1,6 @@
-import words from 'src/data/words.json';
-import Letter from 'src/types/letter';
-
-const wordsArr: string[] = shuffle(words);
-const getWord = (): string => wordsArr[Math.floor(Math.random() * wordsArr.length)];
-const wordsSet = new Set<string>(wordsArr);
-const isWord = (word: string): boolean => wordsSet.has(word);
+import { shuffle } from 'src/sketch/shuffle';
+import { getWord, isWord } from 'src/sketch/words';
+import Letter, { isLetter } from 'src/types/letter';
 
 let tileCoords: [number, number][] = [];
 
@@ -33,9 +29,8 @@ export function placeWord(grid: Letter[][]): Letter[][] {
     for (const [x, y] of shuffle(tileCoords)) {
       // console.log('  starting at', y, x);
       const c = grid[y][x];
-      let start = 0;
-      let i;
-      while (start < word.length && (i = word.indexOf(c, start)) !== -1) {
+      let i = 0;
+      while (i < word.length && (i = word.indexOf(c, i)) !== -1) {
         // console.log('    offset =', i);
         let fail = false;
         // try horizontally
@@ -52,9 +47,10 @@ export function placeWord(grid: Letter[][]): Letter[][] {
           let newTiles: [number, number][] = [];
           for (let j = 0; j < word.length; j++) {
             const x1 = x - i + j;
+            const c = word[j];
             if (newGrid[y][x1] === '') newTiles.push([x1, y]);
-            //@ts-expect-error
-            newGrid[y][x1] = word[j];
+            if (!isLetter(c)) break;
+            newGrid[y][x1] = c;
           }
           if (newTiles.length > 0 && checkGrid(newGrid)) {
             tileCoords = tileCoords.concat(newTiles);
@@ -80,16 +76,17 @@ export function placeWord(grid: Letter[][]): Letter[][] {
           let newTiles: [number, number][] = [];
           for (let j = 0; j < word.length; j++) {
             const y1 = y - i + j;
+            const c = word[j];
             if (newGrid[y1][x] === '') newTiles.push([x, y1]);
-            //@ts-expect-error
-            newGrid[y1][x] = word[j];
+            if (!isLetter(c)) break;
+            newGrid[y1][x] = c;
           }
           if (newTiles.length > 0 && checkGrid(newGrid)) {
             tileCoords = tileCoords.concat(newTiles);
             return newGrid;
           }
         }
-        start = i + 1;
+        i++;
       }
     }
   }
@@ -132,15 +129,4 @@ function checkGrid(grid: Letter[][]): boolean {
     if (word.length > 1 && !isWord(word)) return false;
   }
   return true;
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  let out = [...arr];
-  let i = out.length;
-  while (i > 0) {
-    let r = Math.floor(Math.random() * i);
-    i--;
-    [out[i], out[r]] = [out[r], out[i]];
-  }
-  return out;
 }

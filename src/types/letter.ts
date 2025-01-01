@@ -28,3 +28,7 @@ type Letter =
   | '';
 
 export default Letter;
+
+export function isLetter(s: string): s is Letter {
+  return s.length === 0 || (s.length === 1 && 'QWERTYUIOPASDFGHJKLZXCVBNM'.includes(s));
+}

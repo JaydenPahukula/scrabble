@@ -189,10 +189,7 @@ const sketch: Sketch = (p5: P5CanvasInstance) => {
         }
       }
     }
-    const start = performance.now();
     if (frameCount % (SECONDS_PER_WORD * FPS) === 0) grid = placeWord(grid);
-    const end = performance.now();
-    console.log(end - start, 'ms');
     frameCount++;
   };
 };
