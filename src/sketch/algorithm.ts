@@ -20,7 +20,8 @@ export function getNumTilesPlaced() {
 
 export function placeFirstWord(grid: Letter[][]): Letter[][] {
   const centerX = Math.floor(grid[0].length / 2);
-  const word = getRandomWord();
+  let word;
+  while ((word = getRandomWord()).length >= grid.length);
   for (let y = 0; y < word.length; y++) {
     const c = word[y];
     if (!isLetter(c)) break;
