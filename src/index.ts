@@ -1,9 +1,6 @@
 import p5, { Font } from 'p5';
 import { BOARD_PATTERN, BOARD_PATTERN_SMALL } from 'src/data/boardpattern';
 import points from 'src/data/letterpoints';
-import InterstateBlack from 'src/fonts/InterstateBlack.otf';
-import InterstateBold from 'src/fonts/InterstateBold.otf';
-import InterstateRegular from 'src/fonts/InterstateRegular.otf';
 import {
   getNumTilesPlaced,
   placeFirstWord,
@@ -13,6 +10,11 @@ import {
 } from 'src/sketch/algorithm';
 import Letter from 'src/types/letter';
 import './index.css';
+
+// import fonts
+const InterstateBlack = new URL('./fonts/InterstateBlack.otf', import.meta.url).href;
+const InterstateBold = new URL('./fonts/InterstateBold.otf', import.meta.url).href;
+const InterstateRegular = new URL('./fonts/InterstateRegular.otf', import.meta.url).href;
 
 const _app = new p5(
   (p5Instance) => {
