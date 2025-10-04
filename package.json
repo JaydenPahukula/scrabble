@@ -17,5 +17,12 @@
   },
   "dependencies": {
     "p5": "^1.11.2"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "printWidth": 100,
+    "plugins": [
+      "prettier-plugin-organize-imports"
+    ]
   }
 }
