@@ -17,8 +17,7 @@ const _app = new p5(
 
     // constants
     const FPS = 30;
-    const SCROLL_SPEED = 0.7;
-    const PLACE_WORD_SPEED = 5.5;
+    const SCROLL_SPEED = 0.8;
     const SIZE_THRESHOLD = 600; // px
     const CELL_RATIO = 1.05;
     const BORDER_SIZE = 0.1; // vs cell width
@@ -89,8 +88,8 @@ const _app = new p5(
     }
 
     function resetUpdateTimer() {
-      updateTimer = Math.floor(FPS * (0.5 + PLACE_WORD_SPEED * (getNumTilesPlaced() / (W * H))));
-      // console.log(getNumTilesPlaced() / (W * H), updateTimer);
+      const percentFilled = getNumTilesPlaced() / (W * H);
+      updateTimer = Math.floor(FPS * (0.5 + 85 * percentFilled * percentFilled));
     }
 
     p5.preload = () => {
