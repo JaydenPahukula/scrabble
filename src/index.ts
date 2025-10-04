@@ -11,11 +11,6 @@ import {
 import Letter from 'src/types/letter';
 import './index.css';
 
-// import fonts
-const InterstateBlack = new URL('./fonts/InterstateBlack.otf', import.meta.url).href;
-const InterstateBold = new URL('./fonts/InterstateBold.otf', import.meta.url).href;
-const InterstateRegular = new URL('./fonts/InterstateRegular.otf', import.meta.url).href;
-
 const _app = new p5(
   (p5Instance) => {
     const p5 = p5Instance as p5;
@@ -99,9 +94,9 @@ const _app = new p5(
     }
 
     p5.preload = () => {
-      fontBlack = p5.loadFont(InterstateBlack);
-      fontBold = p5.loadFont(InterstateBold);
-      fontRegular = p5.loadFont(InterstateRegular);
+      fontBlack = p5.loadFont('/fonts/Interstate-Black.ttf');
+      fontBold = p5.loadFont('/fonts/Interstate-Bold.ttf');
+      fontRegular = p5.loadFont('/fonts/Interstate-Regular.ttf');
     };
 
     p5.setup = () => {
